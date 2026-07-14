@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>塩冶オールスターズ タイムアウト議事録</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: linear-gradient(135deg, #4472C4 0%, #2e5090 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        header p {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        main {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section {
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 8px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            background: #f9f9f9;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            background: white;
+            border-color: #4472C4;
+            box-shadow: 0 0 0 3px rgba(68, 114, 196, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .button-group.full {
+            grid-template-columns: 1fr;
+        }
+
+        button {
+            padding: 12px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: #4472C4;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2e5090;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(68, 114, 196, 0.3);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+
+        .btn-secondary:hover {
+            background: #e5e5e5;
+        }
+
+        .btn-record {
+            background: #d32f2f;
+            color: white;
+            font-size: 16px;
+            padding: 16px;
+            grid-column: span 2;
+        }
+
+        .btn-record.recording {
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .time-input {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .time-input select {
+            margin-bottom: 0;
+        }
+
+        .to-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .to-item {
+            background: #f9f9f9;
+            border-left: 4px solid #4472C4;
+            padding: 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .to-item:hover {
+            background: #f0f0f0;
+            transform: translateX(4px);
+        }
+
+        .to-item-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .to-item-time {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .to-item-meta {
+            display: flex;
+            gap: 8px;
+            font-size: 12px;
+            color: #999;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            background: #e8f0fe;
+            color: #4472C4;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .info-message {
+            background: #e8f0fe;
+            color: #4472C4;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .status-label {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .status-recording {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        footer {
+            padding: 12px 16px;
+            background: #f5f5f5;
+            border-top: 1px solid #ddd;
+            font-size: 11px;
+            color: #999;
+            text-align: center;
+        }
+
+        .toggle-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .toggle-btn {
+            padding: 10px 12px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 13px;
+        }
+
+        .toggle-btn.active {
+            background: #4472C4;
+            color: white;
+            border-color: #4472C4;
+        }
+
+        .period-buttons {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .period-btn {
+            padding: 10px 8px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 12px;
+        }
+
+        .period-btn.active {
+            background: #4472C4;
+            color: white;
+            border-color: #4472C4;
+        }
+
+        .to-counter {
+            background: #e8f0fe;
+            color: #4472C4;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 36px;
+        }
+
+        @media (max-width: 480px) {
+            header h1 {
+                font-size: 16px;
+            }
+
+            main {
+                padding: 12px;
+            }
+
+            .section {
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏀 タイムアウト議事録</h1>
+            <p>塩冶オールスターズ</p>
+        </header>
+
+        <main>
+            <!-- 画面1: 試合情報入力 -->
+            <div class="screen active" id="screenGameInfo">
+                <div class="section">
+                    <h2 class="section-title">試合情報</h2>
+                    <div class="info-message">
+                        試合開始時に入力してください。この情報は全タイムアウトで使用されます。
+                    </div>
+                    
+                    <input type="text" id="gameEventName" placeholder="大会名（例：7月杯）" />
+                    <input type="text" id="gameNumber" placeholder="試合数目（例：1試合目）" />
+                    <input type="text" id="gameOpponent" placeholder="対戦チーム（例：高松）" />
+                </div>
+
+                <div class="button-group full">
+                    <button class="btn-primary" onclick="startRecording()">試合開始</button>
+                </div>
+            </div>
+
+            <!-- 画面2: タイムアウト記録 -->
+            <div class="screen" id="screenRecording">
+                <div class="section">
+                    <h2 class="section-title">試合情報</h2>
+                    <div style="font-size: 13px; color: #666; padding: 8px 0;">
+                        <strong id="displayGameInfo"></strong>
+                    </div>
+                </div>
+
+                <div class="to-counter" id="toCounter"></div>
+
+                <div class="section">
+                    <h2 class="section-title">ピリオド</h2>
+                    <div class="period-buttons" id="periodButtons"></div>
+                </div>
+
+                <div class="section">
+                    <h2 class="section-title">自チーム / 相手チーム</h2>
+                    <div class="toggle-buttons">
+                        <button class="toggle-btn active" data-team="自" onclick="selectTeam('自', this)">自チーム</button>
+                        <button class="toggle-btn" data-team="相" onclick="selectTeam('相', this)">相手チーム</button>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2 class="section-title">残り時間</h2>
+                    <div class="time-input">
+                        <div>
+                            <select id="remainMinutes" onchange="updateRemainMinutes()">
+                                <!-- 動的に生成される -->
+                            </select>
+                        </div>
+                        <div>
+                            <select id="remainSeconds" onchange="updateRemainSeconds()">
+                                <!-- 動的に生成される -->
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2 class="section-title">メモ（自由入力）</h2>
+                    <textarea id="toMemo" placeholder="例：得点差が開いていた、ターンオーバーが増えた"></textarea>
+                </div>
+
+                <div class="section">
+                    <div id="recordingStatus"></div>
+                    <div class="button-group full">
+                        <button class="btn-record" id="recordBtn" onclick="toggleRecording()">🎤 録音開始</button>
+                    </div>
+                    <button class="btn-primary" onclick="saveTimeOut()">保存 & 次へ</button>
+                    <button class="btn-secondary" onclick="endGame()">試合終了</button>
+                </div>
+            </div>
+
+            <!-- 画面3: 試合終了・TO一覧 -->
+            <div class="screen" id="screenGameEnd">
+                <div class="section">
+                    <h2 class="section-title">試合終了</h2>
+                    <div style="font-size: 13px; color: #666; padding: 8px 0;">
+                        <strong id="displayGameInfoEnd"></strong><br>
+                        <span id="toCountDisplay"></span>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2 class="section-title">記録されたタイムアウト</h2>
+                    <div class="to-list" id="toListContainer"></div>
+                </div>
+
+                <div class="button-group full">
+                    <button class="btn-primary" onclick="downloadJSON()">📥 JSONダウンロード</button>
+                </div>
+
+                <div class="button-group full">
+                    <button class="btn-secondary" onclick="resetApp()">新しい試合を開始</button>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            フェーズ1 - 試合中UI | v0.3 (選択式時間入力)
+        </footer>
+    </div>
+
+    <script>
+        // ===== アプリ状態管理 =====
+        let appState = {
+            gameInfo: {
+                eventName: '',
+                gameNumber: '',
+                opponent: ''
+            },
+            currentTO: {
+                period: '1',
+                team: '自',
+                remainMinutes: 0,
+                remainSeconds: 0,
+                memo: '',
+                audioFile: null,
+                timestamp: null
+            },
+            timeouts: [],
+            isRecording: false,
+            mediaRecorder: null,
+            audioChunks: []
+        };
+
+        // ===== 時間選択の初期化 =====
+        function initTimeSelects() {
+            // 分の選択肢 (0～6)
+            const minutesSelect = document.getElementById('remainMinutes');
+            minutesSelect.innerHTML = '';
+            for (let i = 0; i <= 6; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = `${i}分`;
+                if (i === 0) option.selected = true;
+                minutesSelect.appendChild(option);
+            }
+
+            // 秒の選択肢 (0～59)
+            const secondsSelect = document.getElementById('remainSeconds');
+            secondsSelect.innerHTML = '';
+            for (let i = 0; i <= 59; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = `${String(i).padStart(2, '0')}秒`;
+                if (i === 0) option.selected = true;
+                secondsSelect.appendChild(option);
+            }
+        }
+
+        function updateRemainMinutes() {
+            appState.currentTO.remainMinutes = parseInt(document.getElementById('remainMinutes').value) || 0;
+        }
+
+        function updateRemainSeconds() {
+            appState.currentTO.remainSeconds = parseInt(document.getElementById('remainSeconds').value) || 0;
+        }
+
+        // ===== UI初期化 =====
+        function initPeriodButtons() {
+            const periods = ['1ピリ', '2ピリ', '3ピリ', '4ピリ', 'OT'];
+            const container = document.getElementById('periodButtons');
+            container.innerHTML = '';
+            periods.forEach((period, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'period-btn' + (idx === 0 ? ' active' : '');
+                btn.textContent = period;
+                btn.onclick = () => selectPeriod(String(idx + 1), btn);
+                container.appendChild(btn);
+            });
+        }
+
+        function selectPeriod(period, btn) {
+            appState.currentTO.period = period;
+            document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        function selectTeam(team, btn) {
+            appState.currentTO.team = team;
+            document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        function updateToCounter() {
+            const count = appState.timeouts.length;
+            document.getElementById('toCounter').innerHTML = 
+                `<strong>📋 記録済みタイムアウト: ${count}件</strong>`;
+        }
+
+        // ===== 画面遷移 =====
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        // ===== 試合開始 =====
+        function startRecording() {
+            const eventName = document.getElementById('gameEventName').value.trim();
+            const gameNumber = document.getElementById('gameNumber').value.trim();
+            const opponent = document.getElementById('gameOpponent').value.trim();
+
+            if (!eventName || !gameNumber || !opponent) {
+                alert('全ての試合情報を入力してください');
+                return;
+            }
+
+            appState.gameInfo = { eventName, gameNumber, opponent };
+            appState.timeouts = [];
+
+            document.getElementById('displayGameInfo').textContent = 
+                `${eventName} ${gameNumber} vs ${opponent}`;
+
+            initPeriodButtons();
+            initTimeSelects();
+            resetCurrentTO();
+            updateToCounter();
+            showScreen('screenRecording');
+        }
+
+        function resetCurrentTO() {
+            appState.currentTO = {
+                period: '1',
+                team: '自',
+                remainMinutes: 0,
+                remainSeconds: 0,
+                memo: '',
+                audioFile: null,
+                timestamp: new Date().toISOString()
+            };
+            document.getElementById('remainMinutes').value = 0;
+            document.getElementById('remainSeconds').value = 0;
+            document.getElementById('toMemo').value = '';
+            document.getElementById('recordingStatus').innerHTML = '';
+            document.getElementById('recordBtn').textContent = '🎤 録音開始';
+            document.getElementById('recordBtn').classList.remove('recording');
+            appState.isRecording = false;
+            appState.audioChunks = [];
+        }
+
+        // ===== 音声記録 =====
+        function toggleRecording() {
+            if (!appState.isRecording) {
+                startAudioRecording();
+            } else {
+                stopAudioRecording();
+            }
+        }
+
+        async function startAudioRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const mediaRecorder = new MediaRecorder(stream);
+                appState.mediaRecorder = mediaRecorder;
+                appState.audioChunks = [];
+
+                mediaRecorder.ondataavailable = (event) => {
+                    appState.audioChunks.push(event.data);
+                };
+
+                mediaRecorder.start();
+                appState.isRecording = true;
+                document.getElementById('recordBtn').textContent = '⏹️ 録音停止';
+                document.getElementById('recordBtn').classList.add('recording');
+                document.getElementById('recordingStatus').innerHTML = 
+                    '<div class="status-label status-recording">🔴 録音中...</div>';
+            } catch (error) {
+                alert('マイクへのアクセスを許可してください');
+                console.error(error);
+            }
+        }
+
+        function stopAudioRecording() {
+            if (appState.mediaRecorder) {
+                appState.mediaRecorder.stop();
+                appState.mediaRecorder.stream.getTracks().forEach(track => track.stop());
+                
+                appState.mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(appState.audioChunks, { type: 'audio/wav' });
+                    appState.currentTO.audioFile = audioBlob;
+                    appState.isRecording = false;
+                    document.getElementById('recordBtn').textContent = '✅ 録音完了';
+                    document.getElementById('recordingStatus').innerHTML = 
+                        '<div class="status-label" style="background: #e8f5e9; color: #2e7d32;">✓ 音声記録完了</div>';
+                };
+            }
+        }
+
+        // ===== タイムアウト保存 =====
+        function saveTimeOut() {
+            if (!appState.currentTO.audioFile) {
+                alert('音声を記録してください');
+                return;
+            }
+
+            appState.currentTO.remainMinutes = parseInt(document.getElementById('remainMinutes').value) || 0;
+            appState.currentTO.remainSeconds = parseInt(document.getElementById('remainSeconds').value) || 0;
+            appState.currentTO.memo = document.getElementById('toMemo').value;
+
+            const toData = {
+                id: 'to_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+                timestamp: new Date().toLocaleString('ja-JP'),
+                period: appState.currentTO.period,
+                team: appState.currentTO.team,
+                remainTime: `${appState.currentTO.remainMinutes}:${String(appState.currentTO.remainSeconds).padStart(2, '0')}`,
+                memo: appState.currentTO.memo,
+                audioFileName: generateAudioFileName()
+            };
+
+            appState.timeouts.push(toData);
+            console.log('TO saved:', toData);
+            console.log('Total TOs:', appState.timeouts.length);
+
+            updateToCounter();
+
+            alert(`TO ${appState.timeouts.length} を保存しました`);
+            resetCurrentTO();
+        }
+
+        function generateAudioFileName() {
+            const date = new Date().toISOString().split('T')[0];
+            const opponent = appState.gameInfo.opponent;
+            const periodMap = { '1': '1ピリ', '2': '2ピリ', '3': '3ピリ', '4': '4ピリ', '5': 'OT' };
+            const period = periodMap[appState.currentTO.period] || '1ピリ';
+            const team = appState.currentTO.team;
+            const minutes = appState.currentTO.remainMinutes;
+            const seconds = String(appState.currentTO.remainSeconds).padStart(2, '0');
+            return `${date}/${opponent}/${period}/${team}/${minutes}m${seconds}s.wav`;
+        }
+
+        // ===== 試合終了 =====
+        function endGame() {
+            if (appState.timeouts.length === 0) {
+                alert('タイムアウトが記録されていません');
+                return;
+            }
+
+            document.getElementById('displayGameInfoEnd').textContent = 
+                `${appState.gameInfo.eventName} ${appState.gameInfo.gameNumber} vs ${appState.gameInfo.opponent}`;
+            document.getElementById('toCountDisplay').textContent = 
+                `📊 記録されたタイムアウト数: ${appState.timeouts.length}`;
+
+            displayTOList();
+            showScreen('screenGameEnd');
+        }
+
+        function displayTOList() {
+            const container = document.getElementById('toListContainer');
+            container.innerHTML = '';
+
+            console.log('Displaying', appState.timeouts.length, 'timeouts');
+
+            if (appState.timeouts.length === 0) {
+                container.innerHTML = '<div style="color: #999; text-align: center; padding: 20px;">記録されたタイムアウトがありません</div>';
+                return;
+            }
+
+            appState.timeouts.forEach((to, idx) => {
+                const item = document.createElement('div');
+                item.className = 'to-item';
+                item.innerHTML = `
+                    <div class="to-item-header">
+                        <span>TO ${idx + 1}</span>
+                        <span class="to-item-time">${to.timestamp}</span>
+                    </div>
+                    <div class="to-item-meta">
+                        <span class="badge">${to.period}</span>
+                        <span class="badge">${to.team}</span>
+                        <span class="badge">残り: ${to.remainTime}</span>
+                    </div>
+                    <div style="font-size: 12px; color: #666; margin-top: 8px;">
+                        ${to.memo ? `<strong>メモ:</strong> ${to.memo}` : '<em>メモなし</em>'}
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        // ===== JSONダウンロード =====
+        function downloadJSON() {
+            const sessionData = {
+                generatedAt: new Date().toISOString(),
+                gameInfo: appState.gameInfo,
+                timeoutCount: appState.timeouts.length,
+                timeouts: appState.timeouts
+            };
+
+            try {
+                const jsonString = JSON.stringify(sessionData, null, 2);
+                const blob = new Blob([jsonString], { type: 'application/json;charset=utf-8;' });
+                const link = document.createElement("a");
+                const url = URL.createObjectURL(blob);
+                
+                link.setAttribute("href", url);
+                link.setAttribute("download", `${appState.gameInfo.eventName}_${appState.gameInfo.opponent}_${new Date().toISOString().split('T')[0]}.json`);
+                link.style.visibility = 'hidden';
+                
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                console.log('JSON downloaded successfully');
+                alert('JSONをダウンロードしました\n\nファイル名: ' + link.getAttribute("download"));
+            } catch (error) {
+                console.error('Download error:', error);
+                alert('ダウンロードに失敗しました。コンソール確認してください。');
+            }
+        }
+
+        // ===== アプリリセット =====
+        function resetApp() {
+            appState = {
+                gameInfo: { eventName: '', gameNumber: '', opponent: '' },
+                currentTO: { period: '1', team: '自', remainMinutes: 0, remainSeconds: 0, memo: '', audioFile: null, timestamp: null },
+                timeouts: [],
+                isRecording: false,
+                mediaRecorder: null,
+                audioChunks: []
+            };
+            document.getElementById('gameEventName').value = '';
+            document.getElementById('gameNumber').value = '';
+            document.getElementById('gameOpponent').value = '';
+            showScreen('screenGameInfo');
+        }
+
+        // ===== 初期化 =====
+        window.addEventListener('load', () => {
+            showScreen('screenGameInfo');
+        });
+    </script>
+</body>
+</html>
